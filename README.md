@@ -1,2 +1,2 @@
 # pycalypte
-Cliente Python do Calypte
+Cliente Calypte para Python
