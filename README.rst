@@ -10,8 +10,8 @@ memória secundária e tem suporte transacional.
 Instalação
 ##########
 
+.. highlight:: bash
 O Calypte pode ser instalado usando o pip.
-
 ::
 	pip install calypte
 
