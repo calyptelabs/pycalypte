@@ -1,0 +1,5 @@
+/build/
+/dist/
+/calypte.egg-info/
+/.project
+/.pydevproject
