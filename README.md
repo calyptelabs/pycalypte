@@ -7,7 +7,7 @@ memória secundária e tem suporte transacional.
 
 ## Instalação
 
-O Calypte pode ser instalado usando o pip.
+O Calypte pode ser instalado usando o pypi.
 
 ```
 pip install calypte
