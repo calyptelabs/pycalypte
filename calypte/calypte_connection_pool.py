@@ -45,12 +45,14 @@ class ClaypteConnectionPool(object):
                     if self.createdInstances < self.maxInstances:
                         con =  __create_connection(self.host, self.port)
                         self.createdInstances += 1
-                        return con;
+                        return self.__create_proxy(con);
                     
                 finally:
                     lock.release()
-                    
-                return self.instances.get()
+
+            con = self.instances.get()
+            self.instances.task_done()
+            return self.__create_proxy(con)
             
         except Exception as e:
             raise CacheException(e);
@@ -63,29 +65,35 @@ class ClaypteConnectionPool(object):
         @throws CacheException: Lançada se ocorrer uma falha ao tentar 
         recuperar ou criar uma conexão.
         """
-        
+
         try:
+            con = None
             try:
                 con = self.instances.get(True, timeout)
-                self.instances.task_done()
             except Empty as e:
+                continue
+            finally:
                 self.instances.task_done()
-                lock.acquire()
-                try:
-                    if self.createdInstances < self.maxInstances:
-                        con =  __create_connection(self.host, self.port)
-                        self.createdInstances += 1
-                        return con;
-                    
-                finally:
-                    lock.release()
-                    
-                con = self.instances.get()
-                self.instances.task_done()
-                return con
+                
+            if con != None:
+                return self.__create_proxy(con);
+            
+            lock.acquire()
+            try:
+                if self.createdInstances < self.maxInstances:
+                    con =  self.__create_connection(self.host, self.port)
+                    self.createdInstances += 1
+                    return self.__create_proxy(con);
+                
+            finally:
+                lock.release()
+                
+            con = self.instances.get()
+            self.instances.task_done()
+            return self.__create_proxy(con)
+        
         except Exception as e:
             raise CacheException(e);
-        
     
     def release(self,con):
         """
@@ -127,8 +135,6 @@ class ClaypteConnectionPool(object):
         con.connect()
         return con
 
-    def __getinstance(self):
-        pass
-
     def __create_proxy(self, con):
         return CalypteConnectionProxy(con, self)
+    
